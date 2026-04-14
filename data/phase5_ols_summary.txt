@@ -1,0 +1,37 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:     log_duree_totale_h   R-squared:                       0.265
+Model:                            OLS   Adj. R-squared:                  0.265
+Method:                 Least Squares   F-statistic:                     2997.
+Date:                Mon, 11 May 2026   Prob (F-statistic):               0.00
+Time:                        00:44:45   Log-Likelihood:            -1.3346e+05
+No. Observations:               91526   AIC:                         2.669e+05
+Df Residuals:                   91514   BIC:                         2.671e+05
+Df Model:                          11                                         
+Covariance Type:            nonrobust                                         
+=================================================================================================
+                                    coef    std err          t      P>|t|      [0.025      0.975]
+-------------------------------------------------------------------------------------------------
+Intercept                         1.8400      0.020     92.360      0.000       1.801       1.879
+C(agent_lieu_travail)[T.TELE]    -0.0530      0.008     -6.478      0.000      -0.069      -0.037
+C(agent_contrat)[T.CDD]           0.0574      0.010      6.040      0.000       0.039       0.076
+C(agent_contrat)[T.CDS]           0.1423      0.014      9.835      0.000       0.114       0.171
+C(agent_population)[T.CAC]       -0.5118      0.014    -37.803      0.000      -0.538      -0.485
+C(annee_ouverture)[T.2022]        0.0343      0.007      4.703      0.000       0.020       0.049
+agent_experience_j             4.843e-06   3.23e-06      1.499      0.134   -1.49e-06    1.12e-05
+agent_duree_travail_j            -0.0019      0.002     -0.802      0.422      -0.006       0.003
+delai_survenance_ouverture_j      0.0024      0.000     12.098      0.000       0.002       0.003
+nb_interventions                  0.0226      0.001     15.860      0.000       0.020       0.025
+nb_agents_distincts               0.1208      0.002     51.559      0.000       0.116       0.125
+mois_ouverture                    0.0046      0.001      4.526      0.000       0.003       0.007
+==============================================================================
+Omnibus:                    26462.301   Durbin-Watson:                   2.010
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):            92127.435
+Skew:                          -1.445   Prob(JB):                         0.00
+Kurtosis:                       6.976   Cond. No.                     1.10e+04
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 1.1e+04. This might indicate that there are
+strong multicollinearity or other numerical problems.
