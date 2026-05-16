@@ -479,3 +479,255 @@ with onglets[1]:
 # relations entre variables, avec Hue Modality et statistiques descriptives
 # (df.describe()) conformément au cours d'analyse exploratoire.
 # ------------------------------------------------------------
+with onglets[2]:
+    st.title("Analyse Exploratoire Interactive")
+    st.caption(f"**{len(df_filtre):,}** dossiers sélectionnés sur {len(df):,} total")
+
+    # --- Hue Modality — auto-détection des colonnes catégorielles
+    # Objectif : détecter automatiquement les variables catégorielles.
+    # Pour les colonnes à forte cardinalité, les modalités rares sont
+    # regroupées en "Autres" (top 10 conservées, reste agrégé).
+    cols_cat = df_filtre.select_dtypes(exclude=['int64', 'float64']).columns.tolist()
+    hue_var = st.selectbox(
+        "Colorier par (Hue Modality) :",
+        options=[None] + cols_cat,
+        format_func=lambda x: "— Aucun —" if x is None else x,
+    )
+
+    def _applique_hue(frame: pd.DataFrame, col: str, top_n: int = 10) -> pd.Series:
+        """Regroupe les modalités rares en 'Autres' pour limiter la légende."""
+        top = frame[col].value_counts().nlargest(top_n).index
+        return frame[col].where(frame[col].isin(top), other='Autres').astype(str)
+
+    st.markdown("---")
+
+    # --- Statistiques descriptives (df.describe())
+    # Objectif : résumer les variables numériques et catégorielles du jeu filtré.
+    st.subheader("Statistiques descriptives")
+    col_num, col_cat_desc = get_cols(deux_colonnes)
+    with col_num:
+        st.markdown("**Variables numériques**")
+        st.dataframe(df_filtre.describe().round(2), use_container_width=True)
+    with col_cat_desc:
+        st.markdown("**Variables catégorielles**")
+        df_cat_only = df_filtre.select_dtypes(exclude=['int64', 'float64'])
+        st.dataframe(df_cat_only.describe(), use_container_width=True)
+
+    st.markdown("---")
+
+    # --- Distribution de la durée + Durée par cause
+    _T1 = (
+        "La distribution est fortement asymétrique à droite (queue longue) : "
+        "la majorité des dossiers est traitée rapidement (< 20 h), mais quelques "
+        "cas extrêmes tirent la moyenne vers le haut. La médiane est donc "
+        "l'indicateur central le plus approprié pour ce jeu de données."
+    )
+    _T2 = (
+        "Les causes d'intervention en tête de ce classement requièrent "
+        "significativement plus de temps. Cette information est clé pour "
+        "prioriser l'allocation de ressources expérimentées aux dossiers complexes."
+    )
+    col1, col2 = get_cols(deux_colonnes)
+
+    with col1:
+        st.subheader("Distribution de la durée de traitement")
+        duree_valide = df_filtre['duree_totale_h'].dropna()
+        p99 = duree_valide.quantile(0.99)
+        fig, ax = plt.subplots(figsize=(7, 4))
+        if hue_var:
+            df_hist = df_filtre.dropna(subset=['duree_totale_h'])
+            df_hist = df_hist[df_hist['duree_totale_h'] <= p99].copy()
+            df_hist[hue_var] = _applique_hue(df_hist, hue_var)
+            sns.histplot(
+                data=df_hist, x='duree_totale_h', hue=hue_var,
+                bins=60, ax=ax, alpha=0.7, element='step',
+            )
+        else:
+            duree_p99 = duree_valide[duree_valide <= p99]
+            ax.hist(duree_p99, bins=60, color=BLEU, edgecolor='white')
+            ax.axvline(
+                duree_p99.median(), color=ROUGE, linestyle='--',
+                label=f"Médiane : {duree_p99.median():.1f}h",
+            )
+            ax.legend()
+        ax.set_xlabel("Durée totale (heures)")
+        ax.set_ylabel("Fréquence")
+        plt.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        plt.close()
+        if not deux_colonnes:
+            interprete(_T1)
+
+    with col2:
+        st.subheader("Durée médiane par Cause d'intervention")
+        df_cause = (
+            df_filtre.groupby('Cause.intervention')['duree_totale_h']
+            .median().dropna().sort_values(ascending=False).head(10)
+        )
+        fig2, ax2 = plt.subplots(figsize=(7, 4))
+        df_cause.sort_values().plot(kind='barh', ax=ax2, color=BLEU, edgecolor='white')
+        ax2.set_xlabel("Durée médiane (heures)")
+        plt.tight_layout()
+        st.pyplot(fig2, use_container_width=True)
+        plt.close()
+        if not deux_colonnes:
+            interprete(_T2)
+
+    if deux_colonnes:
+        interprete_pair(_T1, _T2)
+
+    st.markdown("---")
+
+    # --- Scatter expérience vs durée + Matrice de corrélation
+    _T3 = (
+        "L'absence de corrélation visuelle entre l'expérience et la durée de "
+        "traitement est confirmée par le modèle OLS (p = 0,134 — non significatif). "
+        "D'autres facteurs (type de contrat, population de l'agent) expliquent "
+        "davantage la variabilité."
+    )
+    _chemin_corr = img('phase5_matrice_correlation.png')
+    _T4 = (
+        "Les corrélations les plus fortes avec la durée de traitement "
+        "concernent le nombre d'interventions et le nombre d'agents distincts. "
+        "Les variables d'expérience et de durée de travail de l'agent "
+        "présentent une corrélation quasi nulle avec la variable cible."
+        if _chemin_corr else ""
+    )
+    col3, col4 = get_cols(deux_colonnes)
+
+    with col3:
+        st.subheader("Expérience vs Durée de traitement")
+        sample = df_filtre.dropna(
+            subset=['agent_experience_j', 'duree_totale_h']
+        ).sample(min(3000, len(df_filtre)), random_state=42).copy()
+        fig3, ax3 = plt.subplots(figsize=(7, 4))
+        if hue_var:
+            sample[hue_var] = _applique_hue(sample, hue_var)
+            sns.scatterplot(
+                data=sample, x='agent_experience_j', y='duree_totale_h',
+                hue=hue_var, ax=ax3, alpha=0.4, s=12,
+            )
+        else:
+            ax3.scatter(
+                sample['agent_experience_j'], sample['duree_totale_h'],
+                alpha=0.25, s=8, color=BLEU,
+            )
+        ax3.set_xlabel("Expérience (jours)")
+        ax3.set_ylabel("Durée totale (heures)")
+        plt.tight_layout()
+        st.pyplot(fig3, use_container_width=True)
+        plt.close()
+        if not deux_colonnes:
+            interprete(_T3)
+
+    with col4:
+        st.subheader("Matrice de corrélation")
+        if _chemin_corr:
+            st.image(_chemin_corr, use_container_width=True)
+            if not deux_colonnes:
+                interprete(_T4)
+        else:
+            st.info("Exécutez d'abord le notebook Phase 5.")
+
+    if deux_colonnes:
+        interprete_pair(_T3, _T4)
+
+
+# ------------------------------------------------------------
+# ONGLET 4 — ÉCONOMÉTRIE (OLS)
+# Objectif : présenter les résultats de la régression OLS (Phase 5),
+# les tests de Gauss-Markov et l'interprétation des coefficients.
+# ------------------------------------------------------------
+with onglets[3]:
+    st.title("Résultats Économétriques — Régression OLS")
+    st.markdown(
+        "**Variable dépendante :** `log(1 + duree_totale_h)` (durée log-transformée)  \n"
+        "**Méthode :** Ordinary Least Squares (OLS) avec erreurs standard robustes HC3"
+    )
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("R²", "0.265")
+    col2.metric("R² ajusté", "0.265")
+    col3.metric("F-statistic", "2 997")
+    col4.metric("Durbin-Watson", "2.010")
+    col5.metric("Observations", "91 526")
+
+    st.markdown("---")
+    interprete(
+        "Un R² de 0,265 signifie que le modèle explique 26,5 % de la variance de la "
+        "durée de traitement. C'est modeste mais attendu pour des données comportementales "
+        "humaines. La F-statistique très élevée (2 997) confirme que l'ensemble des "
+        "variables est globalement significatif."
+    )
+    st.markdown("---")
+
+    st.subheader("Résumé du modèle OLS")
+    ols_txt = charger_ols_summary()
+    st.code(ols_txt, language=None)
+
+    st.markdown("---")
+    st.subheader("Tests des hypothèses classiques (Gauss-Markov)")
+
+    _p_norm = img('phase5_normalite_residus.png')
+    _p_homo = img('phase5_homoscedasticite.png')
+    _T_NORM = (
+        "Le QQ-plot révèle une légère déviation aux extrêmes (queues lourdes), "
+        "ce qui est typique des durées de traitement. Le recours aux erreurs "
+        "standard robustes (HC3) permet de corriger l'hétéroscédasticité sans "
+        "exclure d'observations." if _p_norm else ""
+    )
+    _T_HOMO = (
+        "Le test de Breusch-Pagan rejette l'homoscédasticité (variance non constante "
+        "des résidus). C'est la raison pour laquelle les erreurs standard robustes "
+        "HC3 ont été appliquées — les coefficients restent valides, seules les "
+        "inférences statistiques sont corrigées." if _p_homo else ""
+    )
+
+    col_a, col_b = get_cols(deux_colonnes)
+    with col_a:
+        if _p_norm:
+            st.image(_p_norm, caption="6a — Normalité des résidus", use_container_width=True)
+            if not deux_colonnes:
+                interprete(_T_NORM)
+
+    with col_b:
+        if _p_homo:
+            st.image(
+                _p_homo, caption="6b — Homoscédasticité (Breusch-Pagan)",
+                use_container_width=True,
+            )
+            if not deux_colonnes:
+                interprete(_T_HOMO)
+
+    if deux_colonnes:
+        interprete_pair(_T_NORM, _T_HOMO)
+
+    st.markdown("---")
+    st.subheader("Interprétation des coefficients significatifs (p < 0.05)")
+    coefs = pd.DataFrame([
+        {"Variable": "C(agent_population)[T.CAC]",   "Coeff.": -0.5118, "p-value": "0.000", "Interprétation": "Les agents CAC traitent les dossiers 51% plus vite (log-échelle)"},
+        {"Variable": "nb_agents_distincts",           "Coeff.": +0.1208, "p-value": "0.000", "Interprétation": "Chaque agent supplémentaire augmente la durée de 12%"},
+        {"Variable": "C(agent_contrat)[T.CDS]",       "Coeff.": +0.1423, "p-value": "0.000", "Interprétation": "Les contrats CDS sont associés à +14% de durée"},
+        {"Variable": "C(agent_contrat)[T.CDD]",       "Coeff.": +0.0574, "p-value": "0.000", "Interprétation": "Les contrats CDD sont associés à +6% de durée"},
+        {"Variable": "nb_interventions",              "Coeff.": +0.0226, "p-value": "0.000", "Interprétation": "Chaque intervention supplémentaire augmente la durée de 2%"},
+        {"Variable": "delai_survenance_ouverture_j",  "Coeff.": +0.0024, "p-value": "0.000", "Interprétation": "Un délai plus long → traitement plus long"},
+        {"Variable": "C(agent_lieu_travail)[T.TELE]", "Coeff.": -0.0530, "p-value": "0.000", "Interprétation": "Le télétravail réduit la durée de 5%"},
+        {"Variable": "C(annee_ouverture)[T.2022]",    "Coeff.": +0.0343, "p-value": "0.000", "Interprétation": "2022 : durées légèrement plus longues qu'en 2021"},
+        {"Variable": "mois_ouverture",                "Coeff.": +0.0046, "p-value": "0.000", "Interprétation": "Effet saisonnier léger (+0.5% par mois)"},
+    ])
+    st.dataframe(coefs, hide_index=True, use_container_width=True)
+    st.markdown(
+        "> **Variables non significatives (p > 0.05) :**  \n"
+        "> `agent_experience_j` (p=0.134) et `agent_duree_travail_j` (p=0.422)  \n"
+        "> L'expérience et la durée de travail n'ont pas d'effet significatif sur la durée."
+    )
+    interprete(
+        "Le résultat le plus saillant est l'effet de la population de l'agent : "
+        "les agents CAC réduisent la durée de 51 %, ce qui suggère une spécialisation "
+        "opérationnelle forte. En revanche, l'expérience accumulée (en jours) n'est "
+        "pas significative — c'est contre-intuitif mais cohérent avec une organisation "
+        "où la formation initiale prime sur l'ancienneté."
+    )
+
+
+# ------------------------------------------------------------
