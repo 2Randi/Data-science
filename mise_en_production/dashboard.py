@@ -731,3 +731,12 @@ with onglets[3]:
 
 
 # ------------------------------------------------------------
+# ONGLET 5 — MACHINE LEARNING
+# Objectif : présenter la comparaison des modèles ML (Phase 6),
+# la feature importance et les métriques de performance.
+# ------------------------------------------------------------
+with onglets[4]:
+    st.title("Résultats Machine Learning")
+
+    col1, col2 = get_cols(deux_colonnes)
+    _p_reg = img('phase6_regression_comparaison.png')
