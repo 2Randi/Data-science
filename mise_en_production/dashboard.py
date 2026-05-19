@@ -740,3 +740,261 @@ with onglets[4]:
 
     col1, col2 = get_cols(deux_colonnes)
     _p_reg = img('phase6_regression_comparaison.png')
+    _p_imp = img('phase6_feature_importance_regression.png')
+    _T_REG = (
+        "Gradient Boosting domine (R²=0,63) avec le meilleur équilibre "
+        "biais-variance. Random Forest surapprentit fortement "
+        "(R²train=0,93 vs R²test=0,61), ce qui le rend moins fiable "
+        "sur de nouveaux dossiers." if _p_reg else ""
+    )
+    _T_IMP = (
+        "Les variables les plus importantes confirment les résultats OLS : "
+        "le nombre d'interventions et d'agents distincts dominent. "
+        "Le modèle ML identifie aussi des interactions non-linéaires "
+        "invisibles dans la régression OLS." if _p_imp else ""
+    )
+
+    with col1:
+        st.subheader("Tâche 1 — Régression : prédire `duree_totale_h`")
+        if _p_reg:
+            st.image(
+                _p_reg, caption="Comparaison des modèles de régression",
+                use_container_width=True,
+            )
+            if not deux_colonnes:
+                interprete(_T_REG)
+
+    with col2:
+        st.markdown("#### Résultats numériques")
+        resultats_reg = pd.DataFrame([
+            {"Modèle": "GradientBoostingRegressor", "RMSE": 20.233, "MAE": 9.574,  "R² test": 0.6289, "R² train": 0.5646},
+            {"Modèle": "LinearRegression",          "RMSE": 20.579, "MAE": 9.879,  "R² test": 0.6161, "R² train": 0.5188},
+            {"Modèle": "RandomForestRegressor",     "RMSE": 20.808, "MAE": 10.279, "R² test": 0.6075, "R² train": 0.9278},
+        ])
+        st.dataframe(resultats_reg, hide_index=True, use_container_width=True)
+        st.success(
+            "**GradientBoostingRegressor** — meilleur R² test (0.63) "
+            "avec le moins de surapprentissage"
+        )
+        if _p_imp:
+            st.image(
+                _p_imp, caption="Top 15 Features — meilleur modèle",
+                use_container_width=True,
+            )
+            if not deux_colonnes:
+                interprete(_T_IMP)
+
+    if deux_colonnes:
+        interprete_pair(_T_REG, _T_IMP)
+
+    st.markdown("---")
+    st.subheader("Tâche 2 — Classification : prédire `Cause.intervention`")
+
+    _p_clf = img('phase6_classification_comparaison.png')
+    _p_cm  = img('phase6_matrice_confusion.png')
+    _T_CLF = (
+        "La classification est une tâche plus difficile : prédire la "
+        "cause d'intervention à partir des caractéristiques de l'agent "
+        "et du dossier est ambitieux. Les scores reflètent la difficulté "
+        "inhérente du problème (classes déséquilibrées)." if _p_clf else ""
+    )
+    _T_CM  = (
+        "La diagonale concentre les bonnes prédictions. Les erreurs "
+        "hors-diagonale indiquent les confusions fréquentes entre causes "
+        "proches — information utile pour affiner le modèle ou regrouper "
+        "des catégories similaires." if _p_cm else ""
+    )
+
+    col3, col4 = get_cols(deux_colonnes)
+    with col3:
+        if _p_clf:
+            st.image(
+                _p_clf, caption="Comparaison des modèles de classification",
+                use_container_width=True,
+            )
+            if not deux_colonnes:
+                interprete(_T_CLF)
+
+    with col4:
+        if _p_cm:
+            st.image(
+                _p_cm, caption="Matrice de confusion — meilleur modèle",
+                use_container_width=True,
+            )
+            if not deux_colonnes:
+                interprete(_T_CM)
+
+    if deux_colonnes:
+        interprete_pair(_T_CLF, _T_CM)
+
+    st.markdown("---")
+    st.subheader("Rappel méthodologique")
+    st.markdown("""
+| Décision | Justification |
+|----------|--------------|
+| Pipeline sklearn | Évite le data leakage (transformations apprises sur train uniquement) |
+| SimpleImputer(median) | Conserve toutes les observations malgré les NaN résiduels |
+| train_test_split 80/20 | Standard — stratifié pour la classification |
+| 3 modèles comparés | Baseline linéaire + 2 ensembles pour robustesse |
+""")
+
+
+# ------------------------------------------------------------
+# ONGLET 6 — SIMULATION & RECHERCHE
+# Objectif : permettre la recherche de dossiers existants par filtres SQL
+# et la simulation de durée via les modèles ML (GradientBoosting) et
+# OLS (log-linéaire) sauvegardés dans data/.
+# ------------------------------------------------------------
+with onglets[5]:
+    st.title("Recherche et Simulation")
+    st.markdown(
+        "Recherchez des dossiers existants ou simulez la durée de traitement "
+        "pour de nouvelles données."
+    )
+
+    modele_ml, modele_eco = charger_modeles()
+
+    st.markdown("---")
+    st.header("Recherche de dossiers")
+
+    with st.expander("Filtres de recherche", expanded=False):
+        col_r1, col_r2, col_r3 = st.columns(3)
+        with col_r1:
+            search_annee = st.multiselect(
+                "Année d'ouverture",
+                options=sorted(df['annee_ouverture'].dropna().unique()),
+            )
+            search_mois = st.multiselect(
+                "Mois d'ouverture",
+                options=sorted(df['mois_ouverture'].dropna().unique()),
+            )
+        with col_r2:
+            search_contrat = st.multiselect(
+                "Type de contrat (Agent)",
+                options=df['agent_contrat'].dropna().unique(),
+            )
+            search_lieu = st.multiselect(
+                "Lieu de travail (Agent)",
+                options=df['agent_lieu_travail'].dropna().unique(),
+            )
+        with col_r3:
+            search_cause = st.multiselect(
+                "Cause d'intervention",
+                options=df['Cause.intervention'].dropna().unique(),
+            )
+
+    df_search = df_filtre.copy()
+    if search_annee:
+        df_search = df_search[df_search['annee_ouverture'].isin(search_annee)]
+    if search_mois:
+        df_search = df_search[df_search['mois_ouverture'].isin(search_mois)]
+    if search_contrat:
+        df_search = df_search[df_search['agent_contrat'].isin(search_contrat)]
+    if search_lieu:
+        df_search = df_search[df_search['agent_lieu_travail'].isin(search_lieu)]
+    if search_cause:
+        df_search = df_search[df_search['Cause.intervention'].isin(search_cause)]
+
+    st.write(f"**{len(df_search):,}** résultats trouvés.")
+    st.dataframe(df_search.head(100), use_container_width=True)
+    if len(df_search) > 100:
+        st.caption(
+            "Aperçu limité aux 100 premières lignes pour des raisons de performance."
+        )
+
+    st.markdown("---")
+    st.header("Simulation (Estimation de la durée)")
+    st.markdown(
+        "Saisissez les informations d'un dossier pour estimer sa "
+        "**durée totale de traitement**."
+    )
+
+    if modele_ml is None or modele_eco is None:
+        st.warning(
+            "Les modèles ne sont pas disponibles. "
+            "Exécutez le script `mise_en_production/train_and_save_models.py` au préalable."
+        )
+    else:
+        with st.form("form_simulation"):
+            col_f1, col_f2 = st.columns(2)
+
+            with col_f1:
+                st.subheader("Variables Numériques")
+                agent_experience_j = st.number_input(
+                    "Expérience de l'agent (en jours)", min_value=0, value=365, step=30,
+                )
+                agent_duree_travail_j = st.number_input(
+                    "Durée de travail de l'agent (en jours)", min_value=0, value=1000, step=30,
+                )
+                agent_temps_travail_pct = st.number_input(
+                    "Temps de travail (%)", min_value=0, max_value=100, value=100,
+                )
+                delai_survenance_ouverture_j = st.number_input(
+                    "Délai survenance - ouverture (jours)", min_value=0, value=2, step=1,
+                )
+                nb_interventions = st.number_input(
+                    "Nombre d'interventions", min_value=1, value=1, step=1,
+                )
+                nb_agents_distincts = st.number_input(
+                    "Nombre d'agents distincts", min_value=1, value=1, step=1,
+                )
+                mois_ouverture = st.number_input(
+                    "Mois d'ouverture (1-12)", min_value=1, max_value=12, value=1,
+                )
+
+            with col_f2:
+                st.subheader("Variables Catégorielles")
+                agent_lieu_travail = st.selectbox(
+                    "Lieu de travail",
+                    options=df['agent_lieu_travail'].dropna().unique(),
+                )
+                agent_contrat = st.selectbox(
+                    "Type de contrat",
+                    options=df['agent_contrat'].dropna().unique(),
+                )
+                agent_population = st.selectbox(
+                    "Population de l'agent",
+                    options=df['agent_population'].dropna().unique(),
+                )
+                annee_ouverture = st.selectbox(
+                    "Année d'ouverture",
+                    options=['2021', '2022', '2023', '2024'],
+                )
+
+            submitted = st.form_submit_button("Estimer la durée")
+
+        if submitted:
+            input_data = pd.DataFrame([{
+                'agent_experience_j':          agent_experience_j,
+                'agent_duree_travail_j':        agent_duree_travail_j,
+                'agent_temps_travail_pct':      agent_temps_travail_pct,
+                'delai_survenance_ouverture_j': delai_survenance_ouverture_j,
+                'nb_interventions':             nb_interventions,
+                'nb_agents_distincts':          nb_agents_distincts,
+                'mois_ouverture':               mois_ouverture,
+                'agent_lieu_travail':           agent_lieu_travail,
+                'agent_contrat':                agent_contrat,
+                'agent_population':             agent_population,
+                'annee_ouverture':              str(annee_ouverture),
+            }])
+
+            try:
+                # ML prédit la durée brute (heures)
+                pred_ml = modele_ml.predict(input_data)[0]
+
+                # OLS prédit log(1 + h) → back-transformation expm1
+                pred_eco_log = modele_eco.predict(input_data)[0]
+                pred_eco = np.expm1(pred_eco_log)
+
+                st.success("Estimation réussie !")
+                col_res1, col_res2 = st.columns(2)
+                with col_res1:
+                    st.metric(
+                        label="Estimation Machine Learning (Gradient Boosting)",
+                        value=f"{pred_ml:.2f} h",
+                    )
+                    st.caption(
+                        "Modèle non-linéaire entraîné sur la durée brute (heures). "
+                        "Capture les interactions complexes entre variables."
+                    )
+                with col_res2:
