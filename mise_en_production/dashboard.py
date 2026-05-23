@@ -998,3 +998,28 @@ with onglets[5]:
                         "Capture les interactions complexes entre variables."
                     )
                 with col_res2:
+                    st.metric(
+                        label="Estimation Économétrique (OLS / Log-linéaire)",
+                        value=f"{pred_eco:.2f} h",
+                    )
+                    st.caption(
+                        "Modèle linéaire entraîné sur log(1+h), cohérent avec "
+                        "l'analyse Phase 5. Résultat back-transformé via expm1()."
+                    )
+
+                st.markdown("---")
+                st.info(
+                    "**Analyse de la divergence des estimations :**  \n"
+                    "Le modèle de Machine Learning (Gradient Boosting), avec un $R^2=0{,}63$, "
+                    "capture efficacement les relations non-linéaires et les interactions "
+                    "complexes entre les variables. À l'inverse, le modèle économétrique (OLS), "
+                    "basé sur une relation log-linéaire ($R^2=0{,}265$), bien que plus simple "
+                    "et interprétable, peut présenter un biais de modèle sur certaines "
+                    "configurations, aboutissant à une valeur irréaliste après back-transformation. "
+                    "Cette divergence souligne les limites de l'approche linéaire face à la "
+                    "complexité des données, et confirme la supériorité du modèle non-linéaire "
+                    "pour cette prédiction. Une convergence des deux modèles dans d'autres "
+                    "scénarios constituerait un indicateur de robustesse pour nos résultats."
+                )
+            except Exception as e:
+                st.error(f"Erreur lors de la prédiction : {e}")
