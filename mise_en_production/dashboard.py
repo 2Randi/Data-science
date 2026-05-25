@@ -187,26 +187,30 @@ with st.sidebar:
     f_pop     = st.checkbox("Filtrer par Population", key='f_pop')
 
     with st.form("filtres"):
-        annees = st.multiselect(
-            "Année", [2021, 2022], default=[2021, 2022],
-            disabled=not f_annee,
-        )
-        lieux = st.multiselect(
-            "Lieu", ["SITE", "TELE"], default=["SITE", "TELE"],
-            disabled=not f_lieu,
-        )
-        contrats = st.multiselect(
-            "Contrat",
-            df['agent_contrat'].dropna().unique().tolist(),
-            default=df['agent_contrat'].dropna().unique().tolist(),
-            disabled=not f_contrat,
-        )
-        populations = st.multiselect(
-            "Population",
-            df['agent_population'].dropna().unique().tolist(),
-            default=df['agent_population'].dropna().unique().tolist(),
-            disabled=not f_pop,
-        )
+        if f_annee:
+            annees = st.multiselect("Année", [2021, 2022], default=[2021, 2022])
+        else:
+            annees = []
+        if f_lieu:
+            lieux = st.multiselect("Lieu", ["SITE", "TELE"], default=["SITE", "TELE"])
+        else:
+            lieux = []
+        if f_contrat:
+            contrats = st.multiselect(
+                "Contrat",
+                df['agent_contrat'].dropna().unique().tolist(),
+                default=df['agent_contrat'].dropna().unique().tolist(),
+            )
+        else:
+            contrats = []
+        if f_pop:
+            populations = st.multiselect(
+                "Population",
+                df['agent_population'].dropna().unique().tolist(),
+                default=df['agent_population'].dropna().unique().tolist(),
+            )
+        else:
+            populations = []
         st.form_submit_button("Appliquer les filtres", use_container_width=True)
 
 
@@ -288,7 +292,7 @@ with onglets[0]:
             df_mois['annee_ouverture'].astype(str)
             + '-M' + df_mois['mois_ouverture'].astype(str).str.zfill(2)
         )
-        fig, ax = plt.subplots(figsize=(9, 4))
+        fig, ax = plt.subplots(figsize=(9, 5.1))
         couleurs_annee = [BLEU if a == 2021 else ORANGE for a in df_mois['annee_ouverture']]
         ax.bar(df_mois['periode'], df_mois['n'], color=couleurs_annee, edgecolor='white')
         ax.set_xlabel("Période")
@@ -367,7 +371,7 @@ with onglets[0]:
     with col_d:
         st.subheader("Répartition par Lieu de travail de l'agent")
         dist_lieu = df_filtre['agent_lieu_travail'].value_counts()
-        fig4, ax4 = plt.subplots(figsize=(5, 4))
+        fig4, ax4 = plt.subplots(figsize=(5, 5.5))
         ax4.bar(dist_lieu.index, dist_lieu.values, color=[BLEU, ORANGE], edgecolor='white')
         ax4.set_ylabel("Nombre de dossiers")
         for i, v in enumerate(dist_lieu.values):
@@ -600,7 +604,7 @@ with onglets[2]:
         sample = df_filtre.dropna(
             subset=['agent_experience_j', 'duree_totale_h']
         ).sample(min(3000, len(df_filtre)), random_state=42).copy()
-        fig3, ax3 = plt.subplots(figsize=(7, 4))
+        fig3, ax3 = plt.subplots(figsize=(7, 5.6))
         if hue_var:
             sample[hue_var] = _applique_hue(sample, hue_var)
             sns.scatterplot(
