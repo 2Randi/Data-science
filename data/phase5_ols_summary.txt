@@ -3,8 +3,8 @@
 Dep. Variable:     log_duree_totale_h   R-squared:                       0.265
 Model:                            OLS   Adj. R-squared:                  0.265
 Method:                 Least Squares   F-statistic:                     2997.
-Date:                Mon, 11 May 2026   Prob (F-statistic):               0.00
-Time:                        00:44:45   Log-Likelihood:            -1.3346e+05
+Date:                Wed, 27 May 2026   Prob (F-statistic):               0.00
+Time:                        02:05:38   Log-Likelihood:            -1.3346e+05
 No. Observations:               91526   AIC:                         2.669e+05
 Df Residuals:                   91514   BIC:                         2.671e+05
 Df Model:                          11                                         

@@ -226,9 +226,5 @@ figures/
 # Amir
 *temporaire*.ipynb
 
-# Fichiers d'analyse interne (ne pas pousser)
-ANALYSE_LACUNES.md
-PLAN_MISE_EN_OEUVRE.md
-SCRIPT_VIDEO.md
-# Fichiers non rendus (travail interne)
+# Travail interne — ne pas pousser
 non-rendu/

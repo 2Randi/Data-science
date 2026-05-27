@@ -5,8 +5,8 @@ import re
 
 def natural_sort_key(text):
     """
-    تابع برای تبدیل متن به کلیدی که برای مرتب‌سازی طبیعی استفاده میشه
-    مثال: C1, C2, C10 به جای C1, C10, C2
+    Fonction pour convertir du texte en clé utilisée pour le tri naturel
+    Exemple : C1, C2, C10 au lieu de C1, C10, C2
     """
     return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', str(text))]
 
@@ -131,7 +131,7 @@ class DataFrameStyler:
         """
         if column_name in self.df.columns:
             if numeric:
-                # استفاده از natural_sort_key برای تر تیب صحیح
+                # Utilisation de natural_sort_key pour un ordre correct
                 self.df = self.df.sort_values(
                     by=column_name,
                     ascending=ascending,
