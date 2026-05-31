@@ -88,8 +88,8 @@ def charger_dataset() -> pd.DataFrame:
     df = pd.read_sql_query("SELECT * FROM dossiers", conn)
     conn.close()
     df['date.ouverture'] = pd.to_datetime(
-        df['date.ouverture'], format='%Y/%m/%d', errors='coerce'
-    )
+        df['date.ouverture'], errors='coerce'
+    ).astype('datetime64[s]')
     return df
 
 
@@ -900,7 +900,10 @@ with onglets[5]:
         df_search = df_search[df_search['Cause.intervention'].isin(search_cause)]
 
     st.write(f"**{len(df_search):,}** résultats trouvés.")
-    st.dataframe(df_search.head(100), use_container_width=True)
+    df_display = df_search.head(100).copy()
+    for col in df_display.select_dtypes(include=['datetime', 'datetimetz']).columns:
+        df_display[col] = df_display[col].astype(str)
+    st.dataframe(df_display, use_container_width=True)
     if len(df_search) > 100:
         st.caption(
             "Aperçu limité aux 100 premières lignes pour des raisons de performance."

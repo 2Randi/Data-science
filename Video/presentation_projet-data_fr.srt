@@ -1,0 +1,379 @@
+1
+00:00:03,820 --> 00:00:04,994
+Bonjour à tous.
+
+2
+00:00:05,014 --> 00:00:06,950
+Tsiory et moi-même, Amir,
+
+3
+00:00:07,020 --> 00:00:09,580
+sommes ravis de vous présenter notre projet Data
+
+4
+00:00:09,900 --> 00:00:12,957
+réalisé dans le cadre du Diplôme Universitaire
+
+5
+00:00:12,977 --> 00:00:16,004
+de l'Université de Montpellier.
+
+6
+00:00:16,024 --> 00:00:18,626
+Notre objectif principal était d'analyser
+
+7
+00:00:19,151 --> 00:00:22,085
+et de prédire la durée de traitement
+
+8
+00:00:22,105 --> 00:00:24,454
+des dossiers d'un centre d'assistance.
+
+9
+00:00:24,848 --> 00:00:27,506
+Pour cela, nous nous sommes appuyés
+
+10
+00:00:27,526 --> 00:00:29,553
+sur trois bases de données riches –
+
+11
+00:00:29,846 --> 00:00:32,210
+regroupant les informations des dossiers,
+
+12
+00:00:32,260 --> 00:00:35,130
+les ressources humaines et les temps de traitement –
+
+13
+00:00:35,150 --> 00:00:38,507
+ce qui représente environ 98 000 interventions
+
+14
+00:00:38,527 --> 00:00:41,733
+sur les années 2021 et 2022.
+
+15
+00:00:41,753 --> 00:00:46,652
+Le dashboard que vous voyez à l'écran
+
+16
+00:00:47,173 --> 00:00:50,300
+synthétise l'ensemble de notre travail,
+
+17
+00:00:50,410 --> 00:00:52,519
+de la préparation des données
+
+18
+00:00:52,539 --> 00:00:56,421
+jusqu'aux prédictions de l'intelligence artificielle.
+
+19
+00:00:56,441 --> 00:00:57,877
+Avant toute modélisation,
+
+20
+00:00:57,897 --> 00:01:02,077
+nous avons mené un travail rigoureux de nettoyage.
+
+21
+00:01:02,097 --> 00:01:06,032
+Les données brutes présentaient plusieurs défis :
+
+22
+00:01:06,052 --> 00:01:11,392
+des doublons, des dates hors du périmètre de l'étude,
+
+23
+00:01:11,930 --> 00:01:13,796
+des saisies aberrantes comme
+
+24
+00:01:13,816 --> 00:01:16,229
+des heures de traitement à 25h,
+
+25
+00:01:16,680 --> 00:01:19,470
+et plus de 14 000 valeurs manquantes.
+
+26
+00:01:20,760 --> 00:01:23,410
+Au lieu de tout supprimer aveuglément,
+
+27
+00:01:23,560 --> 00:01:26,168
+nous avons appliqué des filtres logiques
+
+28
+00:01:26,188 --> 00:01:27,776
+et des imputations ciblées
+
+29
+00:01:27,796 --> 00:01:30,850
+pour ne pas biaiser notre échantillon.
+
+30
+00:01:30,870 --> 00:01:34,585
+Résultat : nous avons réussi à consolider
+
+31
+00:01:34,605 --> 00:01:37,390
+une base de données unique,
+
+32
+00:01:37,410 --> 00:01:41,656
+tout en ne sacrifiant que 2,3 % des lignes initiales.
+
+33
+00:01:41,989 --> 00:01:46,284
+Cela nous a offert une fondation extrêmement solide
+
+34
+00:01:46,304 --> 00:01:48,853
+pour la suite de l'analyse.
+
+35
+00:01:48,873 --> 00:01:51,138
+Je vais vous parler
+
+36
+00:01:51,158 --> 00:01:53,472
+de l'exploration de ces données.
+
+37
+00:01:53,492 --> 00:01:55,942
+En analysant notre base nettoyée
+
+38
+00:01:55,962 --> 00:01:58,419
+à travers ce dashboard interactif,
+
+39
+00:01:58,439 --> 00:02:02,312
+nous avons rapidement identifié des tendances fortes.
+
+40
+00:02:02,332 --> 00:02:05,405
+La distribution de la durée de traitement
+
+41
+00:02:05,425 --> 00:02:07,255
+est très asymétrique :
+
+42
+00:02:07,550 --> 00:02:10,790
+la grande majorité des dossiers se clôture rapidement,
+
+43
+00:02:10,810 --> 00:02:14,319
+avec une médiane autour de 9 heures.
+
+44
+00:02:14,339 --> 00:02:16,169
+Cependant, une longue traîne révèle
+
+45
+00:02:16,366 --> 00:02:19,920
+des dossiers complexes dépassant les 100 heures.
+
+46
+00:02:19,940 --> 00:02:23,464
+Nos graphiques dynamiques nous ont aussi permis
+
+47
+00:02:23,484 --> 00:02:25,340
+de visualiser immédiatement l'impact
+
+48
+00:02:25,797 --> 00:02:27,380
+des différents profils d'agents
+
+49
+00:02:27,715 --> 00:02:30,756
+ou des types de contrats sur cette durée,
+
+50
+00:02:30,776 --> 00:02:34,171
+nous guidant naturellement vers la modélisation économétrique.
+
+51
+00:02:34,191 --> 00:02:38,480
+Pour aller plus loin, nous avons modélisé cette durée
+
+52
+00:02:38,500 --> 00:02:41,855
+via une régression linéaire multiple OLS.
+
+53
+00:02:41,875 --> 00:02:44,550
+Pour corriger l'asymétrie de la distribution,
+
+54
+00:02:45,020 --> 00:02:48,450
+nous avons appliqué une transformation logarithmique.
+
+55
+00:02:49,030 --> 00:02:52,773
+Notre modèle a révélé des insights métiers cruciaux :
+
+56
+00:02:52,793 --> 00:02:57,090
+par exemple, l'équipe 'CAC' est 51 % plus rapide
+
+57
+00:02:57,110 --> 00:02:59,226
+que les autres équipes.
+
+58
+00:02:59,246 --> 00:03:03,738
+Le télétravail apporte également un gain de temps de 5 %.
+
+59
+00:03:03,758 --> 00:03:06,971
+À l'inverse, l'intervention de multiples agents
+
+60
+00:03:07,220 --> 00:03:09,279
+sur un même dossier allonge considérablement
+
+61
+00:03:09,299 --> 00:03:11,200
+le temps de traitement.
+
+62
+00:03:11,210 --> 00:03:14,250
+Ces résultats ont été validés statistiquement
+
+63
+00:03:14,670 --> 00:03:18,465
+avec des erreurs standard robustes (HC3)
+
+64
+00:03:18,485 --> 00:03:20,253
+pour pallier l'hétéroscédasticité,
+
+65
+00:03:20,776 --> 00:03:23,933
+garantissant la fiabilité de nos conclusions.
+
+66
+00:03:23,953 --> 00:03:27,542
+Pour la partie prédictive, j'ai pris le relais
+
+67
+00:03:27,562 --> 00:03:30,151
+en comparant trois algorithmes de Machine Learning.
+
+68
+00:03:30,410 --> 00:03:33,413
+Notre but était de maximiser la précision
+
+69
+00:03:33,433 --> 00:03:36,680
+sans tomber dans le piège du surapprentissage.
+
+70
+00:03:36,700 --> 00:03:39,421
+Si le modèle Random Forest offrait
+
+71
+00:03:39,441 --> 00:03:42,576
+un score d'entraînement très élevé,
+
+72
+00:03:42,596 --> 00:03:44,680
+il peinait à généraliser.
+
+73
+00:03:44,700 --> 00:03:47,406
+C'est finalement le Gradient Boosting
+
+74
+00:03:47,426 --> 00:03:50,111
+qui a remporté la palme,
+
+75
+00:03:50,131 --> 00:03:56,206
+avec un R² de 0,63 sur les données de test,
+
+76
+00:03:56,226 --> 00:03:58,560
+démontrant une excellente robustesse.
+
+77
+00:03:59,250 --> 00:04:02,477
+Fait très intéressant : l'importance des variables
+
+78
+00:04:02,497 --> 00:04:06,852
+calculée par l'Intelligence Artificielle corrobore parfaitement
+
+79
+00:04:06,872 --> 00:04:08,785
+nos conclusions économétriques,
+
+80
+00:04:08,805 --> 00:04:14,690
+notamment sur l'impact majeur du nombre d'agents par dossier.
+
+81
+00:04:17,100 --> 00:04:19,875
+Enfin, nous ne voulions pas que ces modèles
+
+82
+00:04:19,895 --> 00:04:21,708
+dorment dans un simple code.
+
+83
+00:04:21,728 --> 00:04:25,911
+Nous les avons mis en production dans cette application web,
+
+84
+00:04:25,931 --> 00:04:29,390
+adossée à une base de données SQLite.
+
+85
+00:04:30,110 --> 00:04:33,120
+Grâce à notre simulateur interactif,
+
+86
+00:04:33,300 --> 00:04:37,660
+un manager peut aujourd'hui saisir les paramètres
+
+87
+00:04:37,680 --> 00:04:40,354
+d'un nouveau dossier et obtenir instantanément
+
+88
+00:04:40,374 --> 00:04:43,710
+une double estimation en temps réel :
+
+89
+00:04:43,760 --> 00:04:47,524
+celle de l'économétrie et celle du Machine Learning.
+
+90
+00:04:47,544 --> 00:04:51,419
+En guise de conclusion, les agents CAC
+
+91
+00:04:51,439 --> 00:04:54,805
+et le télétravail réduisent significativement la durée.
+
+92
+00:04:54,825 --> 00:04:58,495
+Le Gradient Boosting prédit mieux sans surapprentissage
+
+93
+00:04:58,515 --> 00:05:02,237
+et les deux approches convergent sur les mêmes variables clés.
+
+94
+00:05:04,230 --> 00:05:07,794
+Le dashboard permet une simulation en production accessible.
+
+95
+00:05:07,814 --> 00:05:09,820
+Merci pour votre attention.

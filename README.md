@@ -7,6 +7,18 @@ Université de Montpellier — Faculté d'Économie — 2025-2026
 
 ---
 
+## 🎥 Vidéo de présentation
+
+Présentation complète du projet (~5 min) par Tsiory-Fanomezana et SHIRALI POUR Amir :
+
+▶️ **[Regarder la vidéo sur GitLab](Video/presentation_projet-data_subbed.mp4)**
+
+🔗 **Lien alternatif YouTube :** [https://youtu.be/_WfBPYOsp7Y](https://youtu.be/_WfBPYOsp7Y)
+
+🔗 **Lien alternatif Google Drive :** [Dossier Drive (Haute qualité)](https://drive.google.com/drive/folders/1jWY15S4NLx_eHjMIfrZ2WryvPwDJW-7x?usp=share_link)
+
+---
+
 ## Equipe
 
 | Membre | Role |
