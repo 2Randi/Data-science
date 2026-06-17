@@ -3,7 +3,8 @@
 # Projet Data
 
 DU Big Data, Data Science et Analyse des Risques sous Python
-Université de Montpellier — Faculté d'Économie — 2025-2026
+
+Université de Montpellier - Faculté d'Économie - 2025-2026
 
 ---
 
